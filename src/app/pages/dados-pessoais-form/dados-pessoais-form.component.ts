@@ -10,6 +10,10 @@ import { cpfValidator } from '../../shared/validators/cpf.validator';
 import { NgxMaskDirective } from 'ngx-mask';
 import { EmailValidatorService } from '../../shared/services/email-validator.service';
 import { emailExistenteValidator } from '../../shared/validators/emailExistente.validator';
+import { FormConfig } from '../../shared/models/form-config.interface';
+import { DynamicFormService } from '../../shared/services/dynamic-form.service';
+import { getDadosPessoaisConfig } from '../../config/dados-pessoais-form.config';
+import { FormFieldBase } from '../../shared/models/form-field-base.interface';
 
 export const senhasIguaisValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const senha = control.get('senha');
@@ -26,12 +30,15 @@ export const senhasIguaisValidator: ValidatorFn = (control: AbstractControl): Va
     ReactiveFormsModule,
     ButtonComponent,
     NgxMaskDirective
+
   ],
   templateUrl: './dados-pessoais-form.component.html',
   styleUrls: ['./dados-pessoais-form.component.scss']
 })
 export class DadosPessoaisFormComponent implements OnInit {
   dadosPessoaisForm!: FormGroup;
+
+  formConfig!: FormConfig;
 
   estado$!: Observable<Estado[]>;
   cidades$!: Observable<Cidade[]>;
@@ -43,24 +50,22 @@ export class DadosPessoaisFormComponent implements OnInit {
     private router: Router,
     private cadastroService: CadastroService,
     private ibgeService: IbgeService,
-    private emailService: EmailValidatorService
-  ){}
+    private emailService: EmailValidatorService,
+    private dynamicFormService: DynamicFormService
+  ){
+    this.dynamicFormService.registerFormConfig('dadosPessoaisForm',getDadosPessoaisConfig)
+
+  }
 
   ngOnInit(): void {
+
+    this.formConfig = this.dynamicFormService.getFormConfig('dadosPessoaisForm', this.emailService);
+
     const formOptions: AbstractControlOptions = {
       validators: senhasIguaisValidator
     };
 
-    this.dadosPessoaisForm = this.fb.group({
-      nomeCompleto: ['', Validators.required],
-      cpf: ['',[Validators.required, cpfValidator]],
-      estado: ['', Validators.required],
-      cidade: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email],[emailExistenteValidator(this.emailService)]],
-      senha: ['', [Validators.required, Validators.minLength(6)]],
-      confirmaSenha: ['', Validators.required]
-    }, formOptions);
-
+    this.dadosPessoaisForm = this.dynamicFormService.createFormGroup(this.formConfig, {validators: senhasIguaisValidator});
     this.carregarEstados();
     this.configurarListenerEstado();
 
@@ -78,7 +83,10 @@ export class DadosPessoaisFormComponent implements OnInit {
     } else {
       this.dadosPessoaisForm.markAllAsTouched();
     }
+  }
 
+  isFieldType(field: FormFieldBase, type:string): boolean {
+    return field.type === type;
   }
 
   salvaDadosAtuais(){
