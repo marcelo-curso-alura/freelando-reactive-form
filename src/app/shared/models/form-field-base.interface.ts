@@ -4,7 +4,6 @@ export interface FormFieldBase {
   type: string;
   required?: boolean;
   placeholder?: string;
-  mask?: string;
   errorMessages?: {[key: string]: string};
   validators?: any[];
   asyncValidators?: any[];

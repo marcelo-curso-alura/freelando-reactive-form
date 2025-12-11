@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormBuilder, AbstractControlOptions, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, AbstractControlOptions } from '@angular/forms';
 import { FormConfig } from '../models/form-config.interface';
 
 @Injectable({

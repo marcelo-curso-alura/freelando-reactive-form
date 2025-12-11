@@ -1,3 +1,4 @@
+<!-- dados-pessoais-form.component.html -->
 <div class="cadastro-form">
   <div class="cadastro-form__container">
     <div class="cadastro-form__card">
@@ -8,35 +9,147 @@
       </p>
 
       <form [formGroup]="dadosPessoaisForm" (ngSubmit)="onProximo()">
+        <!-- Campos de largura total (exceto estado/cidade e senha/confirmaSenha) -->
         <ng-container *ngFor="let field of formConfig.fields">
-          <ng-container *ngIf="isFieldType(field,'text') || isFieldType(field,'email')">
-            <div class="cadastro-form__field" 
-                 [ngClass]="{'cadastro-form__field--half': field.width === 'half'}">
-                 <label [for]="field.formControlName" class="cadastro-form__label">{{ field.label }}</label>
-                 <input
-                   [id]="field.formControlName"
-                   [type]="field.type"
-                   class="cadastro-form__input"
-                   [formControlName]="field.formControlName"
-                   [placeholder]="field.placeholder || ''"
-                   [mask]="field.mask || ''">
-                 <div *ngIf="(dadosPessoaisForm.get(field.formControlName)?.invalid && 
-                             dadosPessoaisForm.get(field.formControlName)?.touched)" 
-                             class="cadastro-form__error">
-                       <ng-container *ngFor="let error of field.errorMessages | keyvalue">
+          <ng-container *ngIf="field.width !== 'half' &&
+                              field.formControlName !== 'estado' &&
+                              field.formControlName !== 'cidade' &&
+                              field.formControlName !== 'senha' &&
+                              field.formControlName !== 'confirmaSenha'">
+            <div class="cadastro-form__field">
+              <label [for]="field.formControlName" class="cadastro-form__label">{{ field.label }}</label>
 
-                          <span *ngIf="dadosPessoaisForm.get(field.formControlName)?.errors?.[error.key]">
-                            {{ error.value }}
-                          </span>
+              <!-- Input para campos de texto, email -->
+              <ng-container *ngIf="isFieldType(field, 'text') || isFieldType(field, 'email')">
+                <input
+                  [id]="field.formControlName"
+                  [type]="field.type"
+                  class="cadastro-form__input"
+                  [formControlName]="field.formControlName"
+                  [placeholder]="field.placeholder || ''">
+              </ng-container>
 
-                       </ng-container>>
-                 </div>
-                 <div *ngIf="dadosPessoaisForm.get(field.formControlName)?.pending" class="cadastro-form__pending">
-                   Verificando disponibilidade...
-                 </div>
+              <!-- Mensagens de erro -->
+              <div *ngIf="dadosPessoaisForm.get(field.formControlName)?.invalid && dadosPessoaisForm.get(field.formControlName)?.touched" class="cadastro-form__error">
+                <ng-container *ngFor="let error of field.errorMessages | keyvalue">
+                  <span *ngIf="dadosPessoaisForm.get(field.formControlName)?.errors?.[error.key]">{{ error.value }}</span>
+                </ng-container>
+              </div>
             </div>
           </ng-container>
         </ng-container>
+
+        <ng-container *ngIf="hasField('estado') && hasField('cidade')">
+          <div class="cadastro-form__row">
+            <div class="cadastro-form__field cadastro-form__field--half">
+              <label for="estado" class="cadastro-form__label">{{ getFieldByName('estado').label }}</label>
+              <select
+                id="estado"
+                class="cadastro-form__select"
+                formControlName="estado">
+                <option value="" disabled selected>{{ getFieldByName('estado').placeholder || 'Selecione' }}</option>
+                <ng-container *ngIf="estado$ | async as estados">
+                  <option *ngFor="let estado of estados" [value]="estado.sigla">{{ estado.nome }}</option>
+                </ng-container>
+              </select>
+              <div *ngIf="dadosPessoaisForm.get('estado')?.invalid && dadosPessoaisForm.get('estado')?.touched" class="cadastro-form__error">
+                <ng-container *ngFor="let error of getFieldByName('estado').errorMessages | keyvalue">
+                  <span *ngIf="dadosPessoaisForm.get('estado')?.errors?.[error.key]">{{ error.value }}</span>
+                </ng-container>
+              </div>
+            </div>
+
+            <div class="cadastro-form__field cadastro-form__field--half">
+              <label for="cidade" class="cadastro-form__label">{{ getFieldByName('cidade').label }}</label>
+              <select
+                id="cidade"
+                class="cadastro-form__select"
+                formControlName="cidade"
+                [disabled]="(carregandoCidades$ | async) || !dadosPessoaisForm.get('estado')?.value">
+                <option value="" disabled selected>{{ (carregandoCidades$ | async) ? 'Carregando...' : (getFieldByName('cidade').placeholder || 'Selecione') }}</option>
+                <ng-container *ngIf="cidades$ | async as cidades">
+                  <option *ngFor="let cidade of cidades" [value]="cidade.nome">{{ cidade.nome }}</option>
+                </ng-container>
+              </select>
+              <div *ngIf="dadosPessoaisForm.get('cidade')?.invalid && dadosPessoaisForm.get('cidade')?.touched" class="cadastro-form__error">
+                <ng-container *ngFor="let error of getFieldByName('cidade').errorMessages | keyvalue">
+                  <span *ngIf="dadosPessoaisForm.get('cidade')?.errors?.[error.key]">{{ error.value }}</span>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Campo Email com validação assíncrona -->
+        <ng-container *ngIf="hasField('email')">
+          <div class="cadastro-form__field">
+            <label for="email" class="cadastro-form__label">{{ getFieldByName('email').label }}</label>
+            <div class="input-container">
+              <input
+                id="email"
+                type="email"
+                class="cadastro-form__input"
+                [ngClass]="{'cadastro-form__input--error': dadosPessoaisForm.get('email')?.invalid && dadosPessoaisForm.get('email')?.touched,
+                           'cadastro-form__input--pending': dadosPessoaisForm.get('email')?.pending}"
+                formControlName="email">
+            </div>
+
+            <div class="cadastro-form__error-container">
+              <div *ngIf="dadosPessoaisForm.get('email')?.invalid && dadosPessoaisForm.get('email')?.touched && !dadosPessoaisForm.get('email')?.pending" class="cadastro-form__error">
+                <ng-container *ngFor="let error of getFieldByName('email').errorMessages | keyvalue">
+                  <span *ngIf="dadosPessoaisForm.get('email')?.errors?.[error.key]">{{ error.value }}</span>
+                </ng-container>
+                <span *ngIf="dadosPessoaisForm.get('email')?.errors?.['emailExistente']" class="cadastro-form__error cadastro-form__error--async">
+                  Este email já está cadastrado
+                </span>
+              </div>
+
+              <div *ngIf="dadosPessoaisForm.get('email')?.pending" class="cadastro-form__pending">
+                Verificando disponibilidade...
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Campos Senha e Confirma Senha (lado a lado) -->
+        <ng-container *ngIf="hasField('senha') && hasField('confirmaSenha')">
+          <div class="cadastro-form__row">
+            <!-- Campo Senha -->
+            <div class="cadastro-form__field cadastro-form__field--half">
+              <label for="senha" class="cadastro-form__label">{{ getFieldByName('senha').label }}</label>
+              <input
+                id="senha"
+                type="password"
+                class="cadastro-form__input"
+                formControlName="senha">
+              <div *ngIf="dadosPessoaisForm.get('senha')?.invalid && dadosPessoaisForm.get('senha')?.touched" class="cadastro-form__error">
+                <ng-container *ngFor="let error of getFieldByName('senha').errorMessages | keyvalue">
+                  <span *ngIf="dadosPessoaisForm.get('senha')?.errors?.[error.key]">{{ error.value }}</span>
+                </ng-container>
+              </div>
+            </div>
+
+            <!-- Campo Confirma Senha -->
+            <div class="cadastro-form__field cadastro-form__field--half">
+              <label for="confirmaSenha" class="cadastro-form__label">{{ getFieldByName('confirmaSenha').label }}</label>
+              <input
+                id="confirmaSenha"
+                type="password"
+                class="cadastro-form__input"
+                formControlName="confirmaSenha">
+              <div *ngIf="dadosPessoaisForm.get('confirmaSenha')?.invalid && dadosPessoaisForm.get('confirmaSenha')?.touched" class="cadastro-form__error">
+                <ng-container *ngFor="let error of getFieldByName('confirmaSenha').errorMessages | keyvalue">
+                  <span *ngIf="dadosPessoaisForm.get('confirmaSenha')?.errors?.[error.key]">{{ error.value }}</span>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Mensagem de erro para senhas não coincidentes -->
+        <div *ngIf="dadosPessoaisForm.errors?.['senhasNaoIguais'] && dadosPessoaisForm.get('confirmaSenha')?.touched" class="cadastro-form__error">
+          As senhas não coincidem
+        </div>
 
         <div class="cadastro-form__actions">
           <app-button

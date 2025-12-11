@@ -1,6 +1,7 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, retry } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { retry } from 'rxjs/operators';
 
 export interface Estado {
   id: number;
@@ -17,7 +18,6 @@ export interface Cidade {
   providedIn: 'root'
 })
 export class IbgeService {
-
   private readonly API_URL = 'https://servicodados.ibge.gov.br/api/v1/localidades';
 
   constructor(private http: HttpClient) { }
@@ -35,5 +35,4 @@ export class IbgeService {
         retry(2)
       );
   }
-
 }

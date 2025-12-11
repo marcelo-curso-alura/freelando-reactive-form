@@ -1,6 +1,6 @@
 import { AbstractControl, AsyncValidatorFn, ValidationErrors } from "@angular/forms";
-import { catchError, map, Observable, of } from "rxjs";
 import { EmailValidatorService } from "../services/email-validator.service";
+import { catchError, map, Observable, of } from "rxjs";
 
 export function emailExistenteValidator(emailService: EmailValidatorService): AsyncValidatorFn {
   return (control: AbstractControl): Observable<ValidationErrors | null> => {

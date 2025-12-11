@@ -1,14 +1,12 @@
-import { Validators } from "@angular/forms";
-import { FormConfig } from "../shared/models/form-config.interface";
-import { cpfValidator } from "../shared/validators/cpf.validator";
-import { emailExistenteValidator } from "../shared/validators/emailExistente.validator";
-
+import { Validators } from '@angular/forms';
+import { FormConfig } from '../shared/models/form-config.interface';
+import { cpfValidator } from '../shared/validators/cpf.validator';
+import { emailExistenteValidator } from '../shared/validators/emailExistente.validator';
 
 export function getDadosPessoaisConfig(emailService: any): FormConfig {
   return {
     title: 'Crie seu cadastro',
-    description: 'Crie seu perfil gratuitamente para começar a trabalhar com os melhores freelancers. ' + 
-                 'Em seguida, você poderá dar mais detalhes sobre suas demandas e sobre sua forma de trabalho.',
+    description: 'Crie seu perfil gratuitamente para começar a trabalhar com os melhores freelancers.',
     fields: [
       {
         label: 'Nome Completo',
@@ -27,7 +25,6 @@ export function getDadosPessoaisConfig(emailService: any): FormConfig {
         type: 'text',
         required: true,
         placeholder: '000.000.000-00',
-        mask: '000.000.000-00',
         errorMessages: {
           required: 'CPF é obrigatório',
           cpfInvalido: 'CPF inválido'

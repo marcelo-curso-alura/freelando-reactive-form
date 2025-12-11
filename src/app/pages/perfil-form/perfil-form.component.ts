@@ -1,3 +1,4 @@
+import { CadastroService } from './../../shared/services/cadastro.service';
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -5,9 +6,8 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { Habilidade } from '../../shared/models/habilidade.interface';
-import { Router } from '@angular/router';
-import { CadastroService } from '../../shared/services/cadastro.service';
 import { ChipComponent } from '../../shared/components/chip/chip.component';
+import { Router } from '@angular/router';
 import { Idioma } from '../../shared/models/idioma.interface';
 
 
@@ -25,7 +25,8 @@ import { Idioma } from '../../shared/models/idioma.interface';
 })
 export class PerfilFormComponent implements OnInit {
   perfilForm!: FormGroup;
-  fotoPreview!: string | ArrayBuffer | null;
+  fotoPreview: string | ArrayBuffer | undefined | null;
+
   caracteresRestantes: number = 70;
 
   habilidades: Habilidade[] = [
@@ -51,42 +52,50 @@ export class PerfilFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
-    private cadastroService: CadastroService
-  ){}
+    private cadastroService: CadastroService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.inicializaFormulario();
+    this.inicializarFormulario();
+
     this.perfilForm.get('resumo')?.valueChanges.subscribe(valor => {
       this.caracteresRestantes = 70 - (valor?.length || 0);
-    });    
+    });
   }
 
-  
   onAnterior(): void {
     this.salvarDadosAtuais();
     this.router.navigate(['/cadastro/dados-pessoais']);
   }
-  
-  onProximo(): void {}
-  
+
+  onProximo(): void {
+    if (this.perfilForm.valid) {
+      this.salvarDadosAtuais();
+      this.router.navigate(['/cadastro/confirmacao']);
+    }
+  }
+
   onFotoSelecionada(event: any): void {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         this.fotoPreview = reader.result;
-        this.perfilForm.patchValue({foto: reader.result});
+        this.perfilForm.patchValue({ foto: reader.result });
       };
       reader.readAsDataURL(file);
     }
   }
 
-  toggleHabilidade(habilidade:Habilidade): void {
+  toggleHabilidade(habilidade: Habilidade): void {
     habilidade.selecionada = !habilidade.selecionada;
+
     const habilidadesSelecionadas = this.habilidades.filter(h => h.selecionada).map(h => h.nome);
+
     this.perfilForm.patchValue({ habilidadesSelecionadas });
   }
+
 
   get idiomasArray(): FormArray {
     return this.perfilForm.get('idiomas') as FormArray;
@@ -109,7 +118,8 @@ export class PerfilFormComponent implements OnInit {
     this.idiomasArray.removeAt(index);
   }
 
-  private inicializaFormulario(){
+
+  private inicializarFormulario(): void {
     this.perfilForm = this.fb.group({
       foto: [''],
       resumo: ['', [Validators.required, Validators.maxLength(70)]],
@@ -117,23 +127,11 @@ export class PerfilFormComponent implements OnInit {
       idiomas: this.fb.array([]),
       portfolio: ['', Validators.pattern('https?://.+')],
       linkedin: ['', Validators.pattern('https?://(www\\.)?linkedin\\.com/.+')]
-    })
+    });
+
     this.adicionarIdioma('Português', 'Nativo');
   }
-  
-  private salvarDadosAtuais() {
-    const formValue = this.perfilForm.value;
-    this.cadastroService.updateCadastroData({
-      foto: this.fotoPreview,
-      resumo: formValue.resumo,
-      habilidadesSelecionadas: formValue.habilidadesSelecionadas,
-      idiomas: this.extrairIdiomas(),
-      portfolio: formValue.portfolio,
-      linkedin: formValue.linkedin
 
-    })
-  }
-  
   private extrairIdiomas(): Idioma[] {
     return this.idiomasArray.controls.map(control => {
       return {
@@ -141,6 +139,18 @@ export class PerfilFormComponent implements OnInit {
         nivel: control.get('nivel')?.value
       };
     });
-  }  
-}
+  }
 
+  private salvarDadosAtuais(): void {
+    const formValue = this.perfilForm.value;
+
+    this.cadastroService.updateCadastroData({
+      foto: this.fotoPreview,
+      resumo: formValue.resumo,
+      habilidadesSelecionadas: formValue.habilidadesSelecionadas,
+      idiomas: this.extrairIdiomas(),
+      portfolio: formValue.portfolio,
+      linkedin: formValue.linkedin
+    });
+  }
+}

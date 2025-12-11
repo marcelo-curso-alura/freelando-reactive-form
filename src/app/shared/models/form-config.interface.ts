@@ -4,4 +4,4 @@ export interface FormConfig {
   title: string;
   description: string;
   fields: FormFieldBase[];
-}''
+}

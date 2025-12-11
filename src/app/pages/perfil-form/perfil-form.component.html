@@ -6,18 +6,16 @@
 
       <form [formGroup]="perfilForm" (ngSubmit)="onProximo()">
 
-        <div class="cadastro-form__fields">
+        <div class="cadastro-form__field">
           <label class="cadastro-form__label">Sua foto</label>
-
           <div class="cadastro-form__upload-container">
             <div class="cadastro-form__upload-area"
-                [class.cadastro-form__upload-area--with-preview]="fotoPreview"
-                (click)="fileInput.click()">
+                 [class.cadastro-form__upload-area--with-preview]="fotoPreview"
+                 (click)="fileInput.click()">
               <ng-container *ngIf="!fotoPreview">
-                <div>
+                <div class="cadastro-form__upload-placeholder">
                   <i class="fas fa-cloud-upload-alt"></i>
-                  <p>Arraste arquivos para esta área ou
-                    clique para fazer o upload</p>
+                  <p>Arraste arquivos para esta área ou clique para fazer o upload</p>
                 </div>
               </ng-container>
               <ng-container *ngIf="fotoPreview">
@@ -26,7 +24,7 @@
             </div>
             <input #fileInput type="file" accept="image/*" style="display: none" (change)="onFotoSelecionada($event)">
           </div>
-        </div>    
+        </div>
 
         <div class="cadastro-form__field">
           <label for="resumo" class="cadastro-form__label">Resumo</label>
@@ -35,8 +33,7 @@
             class="cadastro-form__textarea"
             formControlName="resumo"
             rows="3"
-            maxlength="70">
-          </textarea>
+            maxlength="70"></textarea>
           <div class="cadastro-form__field-info">
             <span>Faça um resumo em até 70 caracteres.</span>
             <span class="cadastro-form__caracteres">{{ caracteresRestantes }}</span>
@@ -50,10 +47,8 @@
           </div>
         </div>
 
-
         <div class="cadastro-form__field">
-          <label class="cadastro-form-label">Cite até 3 habilidades que você considera principais</label>
-
+          <label class="cadastro-form__label">Cite até 3 habilidades que você considera principais:</label>
           <div class="cadastro-form__chips">
             <app-chip
               *ngFor="let habilidade of habilidades"
@@ -63,7 +58,7 @@
               (clicked)="toggleHabilidade(habilidade)">
             </app-chip>
           </div>
-        </div>       
+        </div>
 
         <div class="cadastro-form__field">
           <div class="cadastro-form__row cadastro-form__row--header">
@@ -138,8 +133,8 @@
           <div *ngIf="perfilForm.get('linkedin')?.invalid && perfilForm.get('linkedin')?.touched" class="cadastro-form__error">
             URL do LinkedIn inválida
           </div>
-        </div>        
-        
+        </div>
+
         <div class="cadastro-form__actions">
           <app-button
             text="Anterior"
