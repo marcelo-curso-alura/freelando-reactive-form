@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Habilidade } from '../models/habilidade.interface';
+import { Idioma } from '../models/idioma.interface';
 
 interface CadastroData {
     areaAtuacao?: string;
@@ -9,7 +11,13 @@ interface CadastroData {
     cidade?:string;
     email?: string;
     senha?: string;
-    confirmaSenha?:string;
+    foto?: string | ArrayBuffer | null;
+    resumo?: string;
+    habilidadesSelecionadas?: Array<Habilidade>,
+    idiomas?: Array<Idioma>,
+    portfolio?: string,
+    linkedin?: string
+
 }
 
 @Injectable({
